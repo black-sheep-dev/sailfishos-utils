@@ -28,68 +28,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CRYPTO_H
 #define CRYPTO_H
 
-#include <QString>
-#include <QVector>
-#include <QFlags>
+#include <QByteArray>
 
 class Crypto
 {
 public:
-    enum CompressionMode {
-        CompressionAuto,
-        CompressionAlways,
-        CompressionNever
-    };
+    explicit Crypto(quint8 key);
 
-    enum IntegrityProtectionMode {
-        ProtectionNone,
-        ProtectionChecksum,
-        ProtectionHash
-    };
-
-    enum Error {
-        ErrorNoError,
-        ErrorNoKeySet,
-        ErrorUnknownVersion,
-        ErrorIntegrityFailed
-    };
-
-    enum CryptoFlag{
-        CryptoFlagNone          = 0x00,
-        CryptoFlagCompression   = 0x01,
-        CryptoFlagChecksum      = 0x02,
-        CryptoFlagHash          = 0x04
-    };
-    Q_DECLARE_FLAGS(CryptoFlags, CryptoFlag);
-
-    Crypto();
-    explicit Crypto(quint64 key);
-
-    void setKey(quint64 key);
-    bool hasKey() const;
-    void setCompressionMode(CompressionMode mode);
-    CompressionMode compressionMode() const;
-    void setIntegrityPRotectionMode(IntegrityProtectionMode mode);
-    IntegrityProtectionMode integrityProtectionMode() const;
-    Error lastError() const;
-    QString encryptToString(const QString &plaintext);
-    QString encryptToString(QByteArray plaintext);
-    QByteArray encryptToByteArray(const QString &plaintext);
-    QByteArray encryptToByteArray(QByteArray plaintext);
-    QString decryptToString(const QString &cyphertext);
-    QString decryptToString(QByteArray cyphertext);
-    QByteArray decryptToByteArray(const QString &cyphertext);
-    QByteArray decryptToByteArray(QByteArray cyphertext);
+    QByteArray decrypt(const QByteArray &data, bool compressed = false);
+    QByteArray encrypt(const QByteArray &data, bool compressed = false);
 
 private:
-    void splitKey();
-
-    quint64 m_key{0};
-    QVector<char> m_keyParts;
-    CompressionMode m_compressionMode{CompressionMode::CompressionAuto};
-    IntegrityProtectionMode m_protectionMode{IntegrityProtectionMode::ProtectionChecksum};
-    Error m_lastError{Error::ErrorNoError};
+    quint8 m_key{111};
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(Crypto::CryptoFlags)
 
 #endif // CRYPTO_H
