@@ -1,7 +1,11 @@
+INCLUDEPATH += $$PWD
+DEPENDPATH += $$PWD
+
+
 LIBS += -lz
 
 HEADERS += \
-    compressor/compressor.h
+    $$PWD/compressor.h
 
 SOURCES += \
-    compressor/compressor.cpp
+    $$PWD/compressor.cpp
