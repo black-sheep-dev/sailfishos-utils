@@ -1,7 +1,6 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-
 LIBS += -lz
 
 HEADERS += \
