@@ -26,9 +26,17 @@ const QString &Wallet::path() const
     return m_path;
 }
 
+bool Wallet::removeEntry(const QString &key)
+{
+    auto entries = getEntries();
+    entries.remove(key);
+
+    return writeEntries(entries);
+}
+
 QByteArray Wallet::requestEntry(const QString &key)
 {
-    QHash<QString, QByteArray> entries = getEntries();
+    const auto entries = getEntries();
 
     if (!entries.keys().contains(key)) {
         qWarning() << "Entry is not available";
@@ -38,27 +46,18 @@ QByteArray Wallet::requestEntry(const QString &key)
     return decrypt(entries.value(key));
 }
 
+bool Wallet::reset()
+{
+    return QFile(m_path).remove();
+}
+
 void Wallet::setEntry(const QString &key, const QByteArray &value)
 {
     QHash<QString, QByteArray> entries = getEntries();
 
     entries.insert(key, encrypt(value));
 
-    QFile wallet(m_path);
-
-    if (!wallet.open(QIODevice::WriteOnly)) {
-        qCritical() << "Could not open wallet: " << m_path;
-        return;
-    }
-
-    QDataStream stream(&wallet);
-    stream.setVersion(QDataStream::Qt_5_6);
-
-    stream << SFOS_UTILS_WALLET_MAGIC;
-    stream << SFOS_UTILS_WALLET_VERSION;
-    stream << entries;
-
-    wallet.close();
+    writeEntries(entries);
 }
 
 QByteArray Wallet::encrypt(const QByteArray &data) const
@@ -133,6 +132,27 @@ QByteArray Wallet::decrypt(const QByteArray &data) const
     out.resize(plainLen);
 
     return out;
+}
+
+bool Wallet::writeEntries(const QHash<QString, QByteArray> &entries) const
+{
+    QFile wallet(m_path);
+
+    if (!wallet.open(QIODevice::WriteOnly)) {
+        qCritical() << "Could not open wallet: " << m_path;
+        return false;
+    }
+
+    QDataStream stream(&wallet);
+    stream.setVersion(QDataStream::Qt_5_6);
+
+    stream << SFOS_UTILS_WALLET_MAGIC;
+    stream << SFOS_UTILS_WALLET_VERSION;
+    stream << entries;
+
+    wallet.close();
+
+    return true;
 }
 
 QHash<QString, QByteArray> Wallet::getEntries() const
