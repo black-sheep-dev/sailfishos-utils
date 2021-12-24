@@ -1,4 +1,3 @@
-CONFIG += link_pkgconfig
 PKGCONFIG += openssl 
 
 INCLUDEPATH += $$PWD
