@@ -26,17 +26,16 @@ const QString &Wallet::path() const
     return m_path;
 }
 
-bool Wallet::requestEntry(const QString &key)
+QByteArray Wallet::requestEntry(const QString &key)
 {
     QHash<QString, QByteArray> entries = getEntries();
 
     if (!entries.keys().contains(key)) {
         qWarning() << "Entry is not available";
-        return false;
+        return QByteArray();
     }
 
-    emit entryAvailable(key, decrypt(entries.value(key)));
-    return true;
+    return decrypt(entries.value(key));
 }
 
 void Wallet::setEntry(const QString &key, const QByteArray &value)

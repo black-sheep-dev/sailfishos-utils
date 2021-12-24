@@ -12,11 +12,8 @@ public:
 
     const QString &path() const;
 
-signals:
-    void entryAvailable(const QString &key, const QByteArray &value);
-
 public slots:
-    bool requestEntry(const QString &key);
+    QByteArray requestEntry(const QString &key);
     void setEntry(const QString &key, const QByteArray &value);
 
 private:
