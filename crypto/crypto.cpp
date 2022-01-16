@@ -13,21 +13,43 @@ Crypto::Crypto(quint8 key) :
 
 }
 
+Crypto::Crypto(const QByteArray &key) :
+    m_longKey(key)
+{
+
+}
+
 QByteArray Crypto::decrypt(const QByteArray &data, bool compressed)
 {
     if (data.isNull() || data.isEmpty())
         return QByteArray();
 
-    const QByteArray in = compressed ? qUncompress(data) : data;
+    QByteArray in = compressed ? qUncompress(data) : data;
 
     QByteArray out;
 
-    int key = m_key;
+    if (m_longKey.isEmpty()) {
+        int key = m_key;
 
-    for (const char c : in) {
-        int a = key ^ static_cast<int>(c);
-        key = static_cast<int>(c);
-        out.append(static_cast<char>(a));
+        for (const char c : in) {
+            int a = key ^ static_cast<int>(c);
+            key = static_cast<int>(c);
+            out.append(static_cast<char>(a));
+        }
+
+    } else {
+        for (const char k : m_longKey) {
+            int key = static_cast<int>(k);
+
+            for (const char c : in) {
+                int a = key ^ static_cast<int>(c);
+                key = static_cast<int>(c);
+                out.append(static_cast<char>(a));
+            }
+
+            in = out;
+            out.clear();
+        }
     }
 
     return out;
@@ -42,10 +64,27 @@ QByteArray Crypto::encrypt(const QByteArray &data, bool compressed)
 
     int key = m_key;
 
-    for (const char c : data) {
-        int a = key ^ static_cast<int>(c);
-        key = a;
-        out.append(static_cast<char>(a));
+    if (m_longKey.isEmpty()) {
+        for (const char c : data) {
+            int a = key ^ static_cast<int>(c);
+            key = a;
+            out.append(static_cast<char>(a));
+        }
+    } else {
+        for (const char k : m_longKey) {
+            int key = static_cast<int>(k);
+
+            QByteArray in = data;
+
+            for (const char c : in) {
+                int a = key ^ static_cast<int>(c);
+                key = static_cast<int>(c);
+                out.append(static_cast<char>(a));
+            }
+
+            in = out;
+            out.clear();
+        }
     }
 
     if (compressed) {
