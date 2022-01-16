@@ -24,33 +24,18 @@ QByteArray Crypto::decrypt(const QByteArray &data, bool compressed)
     if (data.isNull() || data.isEmpty())
         return QByteArray();
 
-    QByteArray in = compressed ? qUncompress(data) : data;
+    const QByteArray in = compressed ? qUncompress(data) : data;
 
-    QByteArray out;
+    QByteArray out = in;
 
     if (m_longKey.isEmpty()) {
-        int key = m_key;
-
-        for (const char c : in) {
-            int a = key ^ static_cast<int>(c);
-            key = static_cast<int>(c);
-            out.append(static_cast<char>(a));
+        for (int i = 0; i < in.size(); i++) {
+            out[i] = data[i] ^ m_key;
         }
 
     } else {
-        for (const char k : m_longKey) {
-            int key = static_cast<int>(k);
-
-            out.clear();
-
-            for (const char c : in) {
-                int a = key ^ static_cast<int>(c);
-                key = static_cast<int>(c);
-                out.append(static_cast<char>(a));
-            }
-
-            in = out;
-
+        for (int i = 0; i < in.size(); i++) {
+            out[i] = in[i] ^ m_longKey[i % (m_longKey.size() / sizeof(char))];
         }
     }
 
@@ -62,31 +47,15 @@ QByteArray Crypto::encrypt(const QByteArray &data, bool compressed)
     if (data.isNull() || data.isEmpty())
         return QByteArray();
 
-    QByteArray out;
-
-    int key = m_key;
+    QByteArray out = data;
 
     if (m_longKey.isEmpty()) {
-        for (const char c : data) {
-            int a = key ^ static_cast<int>(c);
-            key = a;
-            out.append(static_cast<char>(a));
+        for (int i = 0; i < data.size(); i++) {
+            out[i] = data[i] ^ m_key;
         }
     } else {
-        QByteArray in = data;
-
-        for (const char k : m_longKey) {
-            int key = static_cast<int>(k);
-
-            out.clear();
-
-            for (const char c : in) {
-                int a = key ^ static_cast<int>(c);
-                key = static_cast<int>(c);
-                out.append(static_cast<char>(a));
-            }
-
-            in = out;
+        for (int i = 0; i < data.size(); i++) {
+            out[i] = data[i] ^ m_longKey[i % (m_longKey.size() / sizeof(char))];
         }
     }
 
