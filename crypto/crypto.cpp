@@ -41,6 +41,8 @@ QByteArray Crypto::decrypt(const QByteArray &data, bool compressed)
         for (const char k : m_longKey) {
             int key = static_cast<int>(k);
 
+            out.clear();
+
             for (const char c : in) {
                 int a = key ^ static_cast<int>(c);
                 key = static_cast<int>(c);
@@ -48,7 +50,7 @@ QByteArray Crypto::decrypt(const QByteArray &data, bool compressed)
             }
 
             in = out;
-            out.clear();
+
         }
     }
 
@@ -71,10 +73,12 @@ QByteArray Crypto::encrypt(const QByteArray &data, bool compressed)
             out.append(static_cast<char>(a));
         }
     } else {
+        QByteArray in = data;
+
         for (const char k : m_longKey) {
             int key = static_cast<int>(k);
 
-            QByteArray in = data;
+            out.clear();
 
             for (const char c : in) {
                 int a = key ^ static_cast<int>(c);
@@ -83,7 +87,6 @@ QByteArray Crypto::encrypt(const QByteArray &data, bool compressed)
             }
 
             in = out;
-            out.clear();
         }
     }
 
